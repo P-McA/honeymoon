@@ -108,6 +108,30 @@
         .day-list-info h4{font-size:.95rem;font-weight:600;margin-bottom:2px}
         .day-list-info p{font-size:.8rem;color:var(--text-light)}
         .day-list-emoji{font-size:1.5rem}
+    
+        /* ===== Checklist View ===== */
+        .checklist-summary{background:var(--card);border-radius:16px;padding:16px;box-shadow:0 2px 8px rgba(0,0,0,.06);margin-bottom:12px}
+        .checklist-summary-top{display:flex;justify-content:space-between;align-items:center;gap:10px;margin-bottom:10px}
+        .checklist-summary h4{font-size:.95rem;font-weight:600}
+        .small-btn{background:var(--bg);border:1px solid var(--border);padding:8px 10px;border-radius:10px;font-size:.8rem;color:var(--text);cursor:pointer}
+        .small-btn:active{transform:translateY(1px)}
+        .checklist-progress{background:var(--bg);border-radius:10px;height:10px;overflow:hidden}
+        .checklist-progress-bar{background:var(--success);height:100%;border-radius:10px;transition:width .3s ease}
+        .checklist-meta{margin-top:10px;font-size:.8rem;color:var(--text-light);display:flex;justify-content:space-between;gap:10px;flex-wrap:wrap}
+        .checklist-category{background:var(--card);border-radius:16px;padding:16px;margin-bottom:12px;box-shadow:0 2px 8px rgba(0,0,0,.06)}
+        .checklist-category-header{display:flex;justify-content:space-between;align-items:center;gap:10px;margin-bottom:12px}
+        .checklist-category-header h3{font-size:1rem;font-weight:600}
+        .checklist-category-header .count{font-size:.8rem;color:var(--text-light)}
+        .check-item{display:flex;gap:12px;align-items:flex-start;padding:10px 0;border-top:1px solid var(--border)}
+        .check-item:first-of-type{border-top:none;padding-top:0}
+        .check-item input[type="checkbox"]{width:22px;height:22px;margin-top:2px;accent-color:var(--primary);cursor:pointer;flex-shrink:0}
+        .check-item .check-text{flex:1}
+        .check-item .check-title{font-size:.9rem;font-weight:500;line-height:1.35}
+        .check-item .check-sub{font-size:.78rem;color:var(--text-light);margin-top:3px;line-height:1.35}
+        .check-item.completed .check-title{text-decoration:line-through;opacity:.65}
+        .check-item.completed .check-sub{opacity:.6}
+        .pill{display:inline-block;background:#f0f5ff;color:var(--primary);font-size:.72rem;padding:2px 8px;border-radius:999px;margin-right:6px}
+
     </style>
 </head>
 <body>
@@ -187,9 +211,22 @@
         <div class="all-days-list" id="allDaysList"></div>
     </main>
 
-    <nav class="bottom-nav">
+    
+    <main class="view" id="checklistView">
+        <div class="section">
+            <div class="section-header">
+                <h3>Checklist</h3>
+                <button class="small-btn" id="resetChecklistBtn">Reset</button>
+            </div>
+            <div class="checklist-summary" id="checklistSummary"></div>
+        </div>
+        <div class="section" id="checklistContent"></div>
+    </main>
+
+<nav class="bottom-nav">
         <button class="nav-item active" data-view="homeView"><span class="nav-icon">🏠</span><span>Today</span></button>
         <button class="nav-item" data-view="scheduleView"><span class="nav-icon">📅</span><span>Schedule</span></button>
+        <button class="nav-item" data-view="checklistView"><span class="nav-icon">✅</span><span>Checklist</span></button>
         <button class="nav-item" data-view="allDaysView"><span class="nav-icon">📋</span><span>All Days</span></button>
     </nav>
 
