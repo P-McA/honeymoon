@@ -415,7 +415,7 @@ function formatTimeInput(timeStr) {
     return `${hours.toString().padStart(2, '0')}:${mins.toString().padStart(2, '0')}`;
 }
 
-function addCustomActivity(dayNum, time, title, desc, romantic = false) {
+function addCustomActivity(dayNum, time, title, desc, romantic = false, venue = null) {
     const t = String(title || '').trim();
     const ti = String(time || '').trim();
     if (!t || !ti) return false;
@@ -432,13 +432,14 @@ function addCustomActivity(dayNum, time, title, desc, romantic = false) {
         title: t,
         desc: String(desc || '').trim(),
         romantic: !!romantic,
+        venue: venue || null,
         createdAt: Date.now()
     });
 
     return saveCustomActivities(custom);
 }
 
-function updateHardcodedActivity(dayNum, index, time, title, desc, romantic) {
+function updateHardcodedActivity(dayNum, index, time, title, desc, romantic, venue = null) {
     const formattedTime = formatTimeInput(String(time || '').trim());
     if (!formattedTime) return false;
 
@@ -449,13 +450,14 @@ function updateHardcodedActivity(dayNum, index, time, title, desc, romantic) {
         time: formattedTime,
         title: String(title || '').trim(),
         desc: String(desc || '').trim(),
-        romantic: !!romantic
+        romantic: !!romantic,
+        venue: venue || null
     };
 
     return saveActivityModifications(mods);
 }
 
-function updateCustomActivity(dayNum, activityId, time, title, desc, romantic) {
+function updateCustomActivity(dayNum, activityId, time, title, desc, romantic, venue = null) {
     const formattedTime = formatTimeInput(String(time || '').trim());
     if (!formattedTime) return false;
 
@@ -470,7 +472,8 @@ function updateCustomActivity(dayNum, activityId, time, title, desc, romantic) {
         time: formattedTime,
         title: String(title || '').trim(),
         desc: String(desc || '').trim(),
-        romantic: !!romantic
+        romantic: !!romantic,
+        venue: venue || null
     };
 
     return saveCustomActivities(custom);
@@ -1119,6 +1122,22 @@ function renderActivityForm() {
                 </label>
             </div>
             <div class="row">
+                <label style="display:flex;align-items:center;gap:8px;font-size:.9rem;">
+                    <input id="activityHasVenue" type="checkbox" ${data.venue && (data.venue.name || data.venue.address) ? 'checked' : ''} />
+                    <span>📍 Add venue details</span>
+                </label>
+            </div>
+            <div id="venueFieldsWrap" style="display:none;margin-top:10px;">
+                <div class="row">
+                    <input id="venueName" type="text" value="${data.venue?.name || ''}"
+                           placeholder="Venue name (e.g., Restaurant, Hotel)" maxlength="100" />
+                </div>
+                <div class="row">
+                    <input id="venueAddress" type="text" value="${data.venue?.address || ''}"
+                           placeholder="Full address" maxlength="200" />
+                </div>
+            </div>
+            <div class="row">
                 <button class="small-btn primary-btn" id="saveActivityBtn">
                     ${isEdit ? 'Save Changes' : 'Add Activity'}
                 </button>
@@ -1132,6 +1151,21 @@ function renderActivityForm() {
     const titleEl = document.getElementById('activityTitle');
     const descEl = document.getElementById('activityDesc');
     const romanticEl = document.getElementById('activityRomantic');
+    const hasVenueEl = document.getElementById('activityHasVenue');
+    const venueFieldsWrap = document.getElementById('venueFieldsWrap');
+
+    // Pre-populate venue fields if editing and venue exists
+    if (data.venue && (data.venue.name || data.venue.address)) {
+        venueFieldsWrap.style.display = 'block';
+    }
+
+    // Toggle venue fields visibility
+    hasVenueEl?.addEventListener('change', () => {
+        venueFieldsWrap.style.display = hasVenueEl.checked ? 'block' : 'none';
+        if (hasVenueEl.checked) {
+            document.getElementById('venueName')?.focus();
+        }
+    });
 
     titleEl?.focus();
 
@@ -1146,6 +1180,22 @@ function renderActivityForm() {
         const title = titleEl?.value?.trim() || '';
         const desc = descEl?.value?.trim() || '';
         const romantic = romanticEl?.checked || false;
+
+        // Get venue data
+        const hasVenue = hasVenueEl?.checked || false;
+        const venue = hasVenue ? {
+            name: document.getElementById('venueName')?.value?.trim() || '',
+            address: document.getElementById('venueAddress')?.value?.trim() || '',
+            lat: null,
+            lng: null
+        } : null;
+
+        // Validate venue if checkbox checked
+        if (hasVenue && !venue.name && !venue.address) {
+            alert('Please enter venue name or address.');
+            document.getElementById('venueName')?.focus();
+            return;
+        }
 
         // Validation
         if (!time) {
@@ -1169,7 +1219,7 @@ function renderActivityForm() {
 
         let success = false;
         if (activityFormMode === 'add') {
-            success = addCustomActivity(activityFormDay, formattedTime, title, desc, romantic);
+            success = addCustomActivity(activityFormDay, formattedTime, title, desc, romantic, venue);
         } else if (activityFormMode === 'edit') {
             if (activityFormData.isCustom) {
                 success = updateCustomActivity(
@@ -1178,7 +1228,8 @@ function renderActivityForm() {
                     formattedTime,
                     title,
                     desc,
-                    romantic
+                    romantic,
+                    venue
                 );
             } else {
                 success = updateHardcodedActivity(
@@ -1187,7 +1238,8 @@ function renderActivityForm() {
                     formattedTime,
                     title,
                     desc,
-                    romantic
+                    romantic,
+                    venue
                 );
             }
         }
@@ -1259,6 +1311,36 @@ function wireActivityButtons(dayNum, activities) {
     });
 }
 
+function openAMap(venueName, address) {
+    const destination = venueName || address;
+    const query = encodeURIComponent(destination);
+
+    // Direct to AMap web with search - works on both mobile and desktop
+    const url = `https://uri.amap.com/marker?position=&name=${query}&src=honeymoon&coordinate=gaode&callnative=1`;
+    window.open(url, '_blank');
+}
+
+function wireVenueToggles() {
+    const container = document.getElementById(currentView === 'scheduleView' ? 'scheduleContent' : 'activitiesList');
+    if (!container) return;
+
+    container.querySelectorAll('[data-venue-idx]').forEach(toggle => {
+        toggle.addEventListener('click', (e) => {
+            e.preventDefault();
+            e.stopPropagation();
+            const idx = toggle.getAttribute('data-venue-idx');
+            const details = document.getElementById(`venue-${idx}`);
+            if (details) {
+                const isVisible = details.style.display !== 'none';
+                details.style.display = isVisible ? 'none' : 'block';
+                // Toggle arrow
+                const arrow = toggle.querySelector('span:last-child');
+                if (arrow) arrow.textContent = isVisible ? '▼' : '▲';
+            }
+        });
+    });
+}
+
 function renderActivities(dayNum) {
     const container = document.getElementById('activitiesList');
     const activities = getMergedActivities(dayNum);
@@ -1281,12 +1363,27 @@ function renderActivities(dayNum) {
         const editBtn = `<button class="icon-btn" data-edit-activity="${displayIdx}" title="Edit">✏️</button>`;
         const deleteBtn = `<button class="icon-btn" data-delete-activity="${displayIdx}" title="Delete">🗑️</button>`;
 
+        const venueHtml = act.venue && (act.venue.name || act.venue.address) ? `
+            <div class="venue-toggle" data-venue-idx="${displayIdx}" style="cursor:pointer;padding:8px 0;color:var(--primary);font-size:.85rem;display:flex;align-items:center;gap:5px;">
+                <span>📍 ${act.venue.name || act.venue.address}</span>
+                <span style="font-size:.7rem;">▼</span>
+            </div>
+            <div class="venue-details" id="venue-${displayIdx}" style="display:none;padding:10px;background:var(--bg);border-radius:8px;margin-top:5px;">
+                ${act.venue.name ? `<div style="font-size:.85rem;margin-bottom:8px;"><strong>${act.venue.name}</strong></div>` : ''}
+                ${act.venue.address ? `<div style="font-size:.8rem;color:var(--text-light);margin-bottom:10px;">${act.venue.address}</div>` : ''}
+                <button class="small-btn primary-btn" onclick="openAMap('${encodeURIComponent(act.venue.name || '')}', '${encodeURIComponent(act.venue.address || '')}')" style="width:100%;">
+                    🧭 Navigate with AMap
+                </button>
+            </div>
+        ` : '';
+
         return `
             <div class="activity-card ${act.romantic ? 'activity-romantic' : ''}" data-activity-idx="${displayIdx}">
                 <div class="activity-time">${act.time}</div>
                 <div class="activity-content" style="flex:1;">
                     <h4>${act.title}${romanticBadge}</h4>
                     <p>${act.desc}</p>
+                    ${venueHtml}
                 </div>
                 <div style="display:flex;gap:5px;align-items:center;">
                     ${editBtn}
@@ -1301,6 +1398,7 @@ function renderActivities(dayNum) {
     `;
 
     wireActivityButtons(dayNum, activities);
+    wireVenueToggles();
 }
 
 function renderTip(dayNum) {
@@ -1362,7 +1460,20 @@ function renderScheduleView(dayNum) {
             const romanticBadge = act.romantic ? '<span class="romantic-badge">💕 Romantic</span>' : '';
             const editBtn = `<button class="icon-btn" data-edit-activity="${displayIdx}" title="Edit">✏️</button>`;
             const deleteBtn = `<button class="icon-btn" data-delete-activity="${displayIdx}" title="Delete">🗑️</button>`;
-            return `<div class="activity-card ${act.romantic ? 'activity-romantic' : ''}"><div class="activity-time">${act.time}</div><div class="activity-content" style="flex:1;"><h4>${act.title}${romanticBadge}</h4><p>${act.desc}</p></div><div style="display:flex;gap:5px;align-items:center;">${editBtn}${deleteBtn}</div></div>`;
+            const venueHtml = act.venue && (act.venue.name || act.venue.address) ? `
+                <div class="venue-toggle" data-venue-idx="${displayIdx}" style="cursor:pointer;padding:8px 0;color:var(--primary);font-size:.85rem;display:flex;align-items:center;gap:5px;">
+                    <span>📍 ${act.venue.name || act.venue.address}</span>
+                    <span style="font-size:.7rem;">▼</span>
+                </div>
+                <div class="venue-details" id="venue-${displayIdx}" style="display:none;padding:10px;background:var(--bg);border-radius:8px;margin-top:5px;">
+                    ${act.venue.name ? `<div style="font-size:.85rem;margin-bottom:8px;"><strong>${act.venue.name}</strong></div>` : ''}
+                    ${act.venue.address ? `<div style="font-size:.8rem;color:var(--text-light);margin-bottom:10px;">${act.venue.address}</div>` : ''}
+                    <button class="small-btn primary-btn" onclick="openAMap('${encodeURIComponent(act.venue.name || '')}', '${encodeURIComponent(act.venue.address || '')}')" style="width:100%;">
+                        🧭 Navigate with AMap
+                    </button>
+                </div>
+            ` : '';
+            return `<div class="activity-card ${act.romantic ? 'activity-romantic' : ''}"><div class="activity-time">${act.time}</div><div class="activity-content" style="flex:1;"><h4>${act.title}${romanticBadge}</h4><p>${act.desc}</p>${venueHtml}</div><div style="display:flex;gap:5px;align-items:center;">${editBtn}${deleteBtn}</div></div>`;
         }).join('')}<button class="small-btn primary-btn" onclick="openActivityForm('add', ${dayNum})" style="margin:10px 15px;width:calc(100% - 30px);">+ Add Activity</button></div>`
         : `<div class="section"><p style="color:var(--text-light);padding:15px;">No activities scheduled</p><button class="small-btn primary-btn" onclick="openActivityForm('add', ${dayNum})" style="margin:0 15px 15px 15px;width:calc(100% - 30px);">+ Add Activity</button></div>`;
 
@@ -1373,6 +1484,7 @@ function renderScheduleView(dayNum) {
         <div class="hotel-card"><div class="hotel-header"><span class="hotel-icon">🏨</span><div><div class="hotel-name">${city.hotel.name}</div><div class="hotel-address">${city.hotel.address}</div></div></div>${city.hotel.chinese ? `<div class="hotel-chinese">${city.hotel.chinese}</div>` : ''}</div>`;
 
     wireActivityButtons(dayNum, activities);
+    wireVenueToggles();
 }
 
 function renderAllDaysView() {
