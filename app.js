@@ -264,6 +264,297 @@ const TRIP_DATA = {
     }
 };
 
+
+// ============ CHECKLIST DATA ============
+const CHECKLIST_STORAGE_KEY = 'china-honeymoon-checklist-v1';
+
+const CHECKLIST_SECTIONS = [
+    {
+        id: "docs",
+        title: "📄 Documents & Essentials",
+        items: [
+            { id: "docs_passports", title: "Passports", sub: "Valid 6+ months beyond Feb 4, 2026 with blank visa pages" },
+            { id: "docs_visa", title: "China Tourist Visa (L Visa)", sub: "Apply 2–4 weeks in advance" },
+            { id: "docs_printed_confirmations", title: "Printed booking confirmations", sub: "Flights, hotels, trains" },
+            { id: "docs_hotel_addresses_cn", title: "Hotel addresses printed in Chinese characters" },
+            { id: "docs_insurance", title: "Travel insurance documents", sub: "Include medical evacuation coverage" },
+            { id: "docs_digital_backup", title: "Digital backup of all documents", sub: "Save in cloud storage" },
+            { id: "docs_photocopies", title: "Physical photocopies", sub: "Stored separately from originals" },
+            { id: "docs_emergency_card", title: "Emergency contact card", sub: "UK Embassy Beijing: +86-10-5192-4000" },
+            { id: "docs_bank_notify", title: "Credit/debit cards", sub: "Notify bank of travel dates" },
+            { id: "docs_cny_cash", title: "Chinese Yuan (CNY)", sub: "Small amount for initial expenses" },
+            { id: "docs_gbp_cash", title: "British Pounds", sub: "For UK legs of journey" }
+        ]
+    },
+    {
+        id: "apps",
+        title: "📱 Apps to Download & Set Up",
+        items: [
+            { id: "apps_alipay", title: "Alipay", sub: "Link international card (essential for payments & DiDi)" },
+            { id: "apps_didi", title: "DiDi", sub: "Test login before departure" },
+            { id: "apps_wechat", title: "WeChat", sub: "Useful for local communication" },
+            { id: "apps_translate", title: "Google Translate", sub: "Download Chinese offline language pack" },
+            { id: "apps_trip", title: "Trip.com", sub: "Access your bookings" },
+            { id: "apps_maps", title: "Maps.me or Amap", sub: "Offline maps (Google Maps limited in China)" },
+            { id: "apps_vpn", title: "VPN app", sub: "For Gmail, Google, WhatsApp, Instagram access" }
+        ]
+    },
+    {
+        id: "tech",
+        title: "🔌 Tech & Gadgets",
+        items: [
+            { id: "tech_adapter", title: "Universal power adapter", sub: "China uses Type A/C/I (220V)" },
+            { id: "tech_powerbank", title: "Portable power bank", sub: "10,000+ mAh recommended" },
+            { id: "tech_chargers", title: "Phone chargers and cables" },
+            { id: "tech_camera", title: "Camera + extra memory cards" },
+            { id: "tech_headphones", title: "Headphones", sub: "For flights and train journeys" }
+        ]
+    },
+    {
+        id: "health",
+        title: "💊 Health & Toiletries",
+        items: [
+            { id: "health_prescriptions", title: "Prescription medications", sub: "With doctor's letter for customs" },
+            { id: "health_firstaid", title: "Basic first aid kit", sub: "Plasters, pain relief, antiseptic" },
+            { id: "health_antidiarrhea", title: "Anti-diarrhea medication" },
+            { id: "health_sanitizer", title: "Hand sanitizer" },
+            { id: "health_tissues", title: "Tissues/toilet paper", sub: "Many public toilets don't provide" },
+            { id: "health_wetwipes", title: "Wet wipes" },
+            { id: "health_sunscreen", title: "Sunscreen and lip balm", sub: "Winter sun + altitude" },
+            { id: "health_toiletries", title: "Personal toiletries", sub: "Limited availability in Wulong" }
+        ]
+    },
+    {
+        id: "pre",
+        title: "✅ Pre-Departure Tasks",
+        items: [
+            { id: "pre_ba_checkin", title: "Check in online for BA flight", sub: "Opens Jan 13" },
+            { id: "pre_harmona_pickup", title: "Confirm Harmona Resort airport pickup arrangement" },
+            { id: "pre_book_cq_wulong_train", title: "Book Chongqing → Wulong train", sub: "Jan 25" },
+            { id: "pre_wulong_transfer", title: "Arrange Wulong → Chongqing Airport private transfer" },
+            { id: "pre_fcdo", title: "Register with FCDO for travel alerts" },
+            { id: "pre_inform_neighbours", title: "Inform neighbours/family of travel dates" },
+            { id: "pre_home_security", title: "Arrange home security/mail collection" }
+        ]
+    },
+    {
+        id: "clothing",
+        title: "🧳 Clothing Packing List",
+        groups: [
+            {
+                id: "clothing_base",
+                title: "Base Layers & Underwear",
+                items: [
+                    { id: "clothing_thermal_tops", title: "Thermal base layer tops", sub: "Qty: 3 • Essential for Beijing & Zhangjiajie" },
+                    { id: "clothing_thermal_bottoms", title: "Thermal base layer bottoms", sub: "Qty: 2 • Wear under trousers in cold areas" },
+                    { id: "clothing_underwear", title: "Underwear", sub: "Qty: 10 • Pack for ~10 days, use hotel laundry" },
+                    { id: "clothing_socks_thermal", title: "Socks - thermal/wool", sub: "Qty: 4 pairs • For outdoor days & hiking" },
+                    { id: "clothing_socks_regular", title: "Socks - regular", sub: "Qty: 6 pairs • Everyday wear" }
+                ]
+            },
+            {
+                id: "clothing_tops",
+                title: "Tops",
+                items: [
+                    { id: "clothing_long_sleeve", title: "Long-sleeve shirts/blouses", sub: "Qty: 4 • Mix of casual & smart casual" },
+                    { id: "clothing_tshirts", title: "T-shirts/short-sleeve tops", sub: "Qty: 3 • For layering & warmer Shenzhen" },
+                    { id: "clothing_fleece", title: "Fleece mid-layer / sweater", sub: "Qty: 2 • Key layering piece" },
+                    { id: "clothing_smart_top", title: "Smart evening top", sub: "Qty: 2 • Hotel restaurants & spa dinners" }
+                ]
+            },
+            {
+                id: "clothing_bottoms",
+                title: "Bottoms",
+                items: [
+                    { id: "clothing_trousers_casual", title: "Trousers - casual/travel", sub: "Qty: 2 • Comfortable for sightseeing" },
+                    { id: "clothing_trousers_smart", title: "Trousers - smart casual", sub: "Qty: 1 • Evening dinners & nice venues" },
+                    { id: "clothing_trousers_hiking", title: "Hiking/outdoor trousers", sub: "Qty: 1 • Zhangjiajie, Wulong, Great Wall" },
+                    { id: "clothing_jeans", title: "Jeans", sub: "Qty: 1 • Versatile everyday option" }
+                ]
+            },
+            {
+                id: "clothing_outerwear",
+                title: "Outerwear & Cold Weather",
+                items: [
+                    { id: "clothing_winter_coat", title: "Heavy winter coat (down/insulated)", sub: "Qty: 1 • Essential - Beijing can be -5°C" },
+                    { id: "clothing_light_jacket", title: "Lighter jacket/layer", sub: "Qty: 1 • For milder Shenzhen days (~15°C)" },
+                    { id: "clothing_waterproof", title: "Waterproof outer layer", sub: "Qty: 1 • Rain protection for hiking" },
+                    { id: "clothing_hat", title: "Warm hat/beanie", sub: "Qty: 1 • Great Wall & outdoor days" },
+                    { id: "clothing_gloves", title: "Warm gloves", sub: "Qty: 1 pair • Touch-screen compatible recommended" },
+                    { id: "clothing_scarf", title: "Scarf", sub: "Qty: 1 • Warmth & versatility" }
+                ]
+            },
+            {
+                id: "clothing_footwear",
+                title: "Footwear",
+                items: [
+                    { id: "clothing_boots", title: "Waterproof walking boots/shoes", sub: "Qty: 1 pair • Essential - hiking & wet conditions" },
+                    { id: "clothing_walk_shoes", title: "Comfortable walking shoes", sub: "Qty: 1 pair • City sightseeing" },
+                    { id: "clothing_smart_shoes", title: "Smart casual shoes", sub: "Qty: 1 pair • Evening dining & hotels" },
+                    { id: "clothing_slippers", title: "Slippers/flip-flops", sub: "Qty: 1 pair • Hotel rooms & spa areas" }
+                ]
+            },
+            {
+                id: "clothing_sleep_spa",
+                title: "Sleepwear & Spa",
+                items: [
+                    { id: "clothing_pyjamas", title: "Pyjamas/sleepwear", sub: "Qty: 2 sets • Comfortable for hotels" },
+                    { id: "clothing_swimwear", title: "Swimwear", sub: "Qty: 1–2 • Hotel pools & spa facilities" }
+                ]
+            },
+            {
+                id: "clothing_accessories",
+                title: "Accessories",
+                items: [
+                    { id: "clothing_belt", title: "Belt", sub: "Qty: 1" },
+                    { id: "clothing_sunglasses", title: "Sunglasses", sub: "Qty: 1 • Winter sun, especially at altitude" },
+                    { id: "clothing_daypack", title: "Small daypack/backpack", sub: "Qty: 1 • Daily sightseeing essentials" },
+                    { id: "clothing_neck_pillow", title: "Neck pillow", sub: "Qty: 1 • Long flights & train journeys" }
+                ]
+            }
+        ]
+    }
+];
+
+function getAllChecklistItems() {
+    const items = [];
+    for (const section of CHECKLIST_SECTIONS) {
+        if (section.items) items.push(...section.items.map(i => ({ ...i, sectionId: section.id, sectionTitle: section.title })));
+        if (section.groups) {
+            for (const g of section.groups) {
+                items.push(...g.items.map(i => ({ ...i, sectionId: section.id, sectionTitle: section.title, groupId: g.id, groupTitle: g.title })));
+            }
+        }
+    }
+    return items;
+}
+
+function loadChecklistState() {
+    try {
+        return JSON.parse(localStorage.getItem(CHECKLIST_STORAGE_KEY) || '{}') || {};
+    } catch {
+        return {};
+    }
+}
+
+function saveChecklistState(state) {
+    localStorage.setItem(CHECKLIST_STORAGE_KEY, JSON.stringify(state));
+}
+
+function setChecklistItem(id, checked) {
+    const state = loadChecklistState();
+    state[id] = !!checked;
+    saveChecklistState(state);
+}
+
+function resetChecklist() {
+    localStorage.removeItem(CHECKLIST_STORAGE_KEY);
+}
+
+function calcChecklistProgress() {
+    const state = loadChecklistState();
+    const all = getAllChecklistItems();
+    const total = all.length;
+    const done = all.reduce((acc, item) => acc + (state[item.id] ? 1 : 0), 0);
+    const pct = total ? Math.round((done / total) * 100) : 0;
+    return { total, done, pct };
+}
+
+function renderChecklistSummary() {
+    const { total, done, pct } = calcChecklistProgress();
+    const summary = document.getElementById('checklistSummary');
+    if (!summary) return;
+    summary.innerHTML = `
+        <div class="checklist-summary-top">
+            <h4>${done} / ${total} complete</h4>
+            <span class="pill">${pct}%</span>
+        </div>
+        <div class="checklist-progress"><div class="checklist-progress-bar" style="width:${pct}%"></div></div>
+        <div class="checklist-meta">
+            <span>Tip: everything is saved offline on this device</span>
+            <span>${pct === 100 ? 'Ready to go ✨' : 'Keep going 💪'}</span>
+        </div>
+    `;
+}
+
+function renderChecklistSection(section, state) {
+    // Standard section
+    if (section.items) {
+        const total = section.items.length;
+        const done = section.items.reduce((a, i) => a + (state[i.id] ? 1 : 0), 0);
+        return `
+            <div class="checklist-category" data-section="${section.id}">
+                <div class="checklist-category-header">
+                    <h3>${section.title}</h3>
+                    <div class="count">${done}/${total}</div>
+                </div>
+                ${section.items.map(item => `
+                    <label class="check-item ${state[item.id] ? 'completed' : ''}">
+                        <input type="checkbox" data-check-id="${item.id}" ${state[item.id] ? 'checked' : ''} />
+                        <div class="check-text">
+                            <div class="check-title">${item.title}</div>
+                            ${item.sub ? `<div class="check-sub">${item.sub}</div>` : ''}
+                        </div>
+                    </label>
+                `).join('')}
+            </div>
+        `;
+    }
+
+    // Grouped (clothing)
+    if (section.groups) {
+        const htmlGroups = section.groups.map(g => {
+            const total = g.items.length;
+            const done = g.items.reduce((a, i) => a + (state[i.id] ? 1 : 0), 0);
+            return `
+                <div class="checklist-category" data-section="${section.id}" data-group="${g.id}">
+                    <div class="checklist-category-header">
+                        <h3>${section.title} • ${g.title}</h3>
+                        <div class="count">${done}/${total}</div>
+                    </div>
+                    ${g.items.map(item => `
+                        <label class="check-item ${state[item.id] ? 'completed' : ''}">
+                            <input type="checkbox" data-check-id="${item.id}" ${state[item.id] ? 'checked' : ''} />
+                            <div class="check-text">
+                                <div class="check-title">${item.title}</div>
+                                ${item.sub ? `<div class="check-sub">${item.sub}</div>` : ''}
+                            </div>
+                        </label>
+                    `).join('')}
+                </div>
+            `;
+        }).join('');
+        return htmlGroups;
+    }
+
+    return '';
+}
+
+function renderChecklistView() {
+    const container = document.getElementById('checklistContent');
+    if (!container) return;
+
+    const state = loadChecklistState();
+    renderChecklistSummary();
+
+    container.innerHTML = CHECKLIST_SECTIONS.map(section => renderChecklistSection(section, state)).join('');
+
+    // Wire up checkbox listeners
+    container.querySelectorAll('input[type="checkbox"][data-check-id]').forEach(cb => {
+        cb.addEventListener('change', (e) => {
+            const id = e.target.getAttribute('data-check-id');
+            setChecklistItem(id, e.target.checked);
+            renderChecklistView(); // small list - quick re-render keeps UI consistent
+        });
+    });
+
+    // Reset button
+    document.getElementById('resetChecklistBtn')?.addEventListener('click', () => {
+        resetChecklist();
+        renderChecklistView();
+    }, { once: true });
+}
+
 // ============ APP STATE ============
 let currentView = 'homeView';
 let selectedDay = null;
@@ -490,6 +781,7 @@ function switchView(viewId) {
     currentView = viewId;
     if (viewId === 'homeView') renderHomeView();
     else if (viewId === 'scheduleView') { const day = selectedDay || getDayOfTrip().day || 1; renderScheduleView(day); }
+    else if (viewId === 'checklistView') renderChecklistView();
     else if (viewId === 'allDaysView') renderAllDaysView();
 }
 
