@@ -267,6 +267,245 @@ const TRIP_DATA = {
 
 // ============ CHECKLIST DATA ============
 const CHECKLIST_STORAGE_KEY = 'china-honeymoon-checklist-v1';
+const CHECKLIST_CUSTOM_TASKS_KEY = 'china-honeymoon-checklist-custom-v1';
+
+let checklistAddOpen = false;
+
+function loadCustomChecklistTasks() {
+    try {
+        const raw = localStorage.getItem(CHECKLIST_CUSTOM_TASKS_KEY);
+        const parsed = raw ? JSON.parse(raw) : [];
+        return Array.isArray(parsed) ? parsed : [];
+    } catch {
+        return [];
+    }
+}
+
+function saveCustomChecklistTasks(tasks) {
+    localStorage.setItem(CHECKLIST_CUSTOM_TASKS_KEY, JSON.stringify(tasks));
+}
+
+function createCustomTaskId() {
+    return `custom_${Date.now().toString(36)}_${Math.random().toString(36).slice(2, 8)}`;
+}
+
+function addCustomChecklistTask(title, sub = '') {
+    const t = String(title || '').trim();
+    const s = String(sub || '').trim();
+    if (!t) return false;
+
+    const tasks = loadCustomChecklistTasks();
+    tasks.unshift({ id: createCustomTaskId(), title: t, sub: s, createdAt: Date.now() });
+    saveCustomChecklistTasks(tasks);
+    return true;
+}
+
+function deleteCustomChecklistTask(id) {
+    const tasks = loadCustomChecklistTasks().filter(t => t.id !== id);
+    saveCustomChecklistTasks(tasks);
+
+    // Also clear completion state for this task
+    const state = loadChecklistState();
+    if (state && Object.prototype.hasOwnProperty.call(state, id)) {
+        delete state[id];
+        saveChecklistState(state);
+    }
+}
+
+// ============ ACTIVITIES DATA ============
+const ACTIVITIES_MODIFICATIONS_KEY = 'china-honeymoon-activities-mods-v1';
+const ACTIVITIES_CUSTOM_KEY = 'china-honeymoon-activities-custom-v1';
+
+function loadActivityModifications() {
+    try {
+        const raw = localStorage.getItem(ACTIVITIES_MODIFICATIONS_KEY);
+        return raw ? JSON.parse(raw) : {};
+    } catch {
+        return {};
+    }
+}
+
+function saveActivityModifications(mods) {
+    try {
+        localStorage.setItem(ACTIVITIES_MODIFICATIONS_KEY, JSON.stringify(mods));
+        return true;
+    } catch (e) {
+        if (e.name === 'QuotaExceededError') {
+            alert('Storage limit reached. Please delete some activities.');
+        }
+        return false;
+    }
+}
+
+function loadCustomActivities() {
+    try {
+        const raw = localStorage.getItem(ACTIVITIES_CUSTOM_KEY);
+        return raw ? JSON.parse(raw) : {};
+    } catch {
+        return {};
+    }
+}
+
+function saveCustomActivities(custom) {
+    try {
+        localStorage.setItem(ACTIVITIES_CUSTOM_KEY, JSON.stringify(custom));
+        return true;
+    } catch (e) {
+        if (e.name === 'QuotaExceededError') {
+            alert('Storage limit reached. Please delete some activities.');
+        }
+        return false;
+    }
+}
+
+function createActivityId() {
+    return `custom_${Date.now().toString(36)}_${Math.random().toString(36).slice(2, 8)}`;
+}
+
+function parseTime(timeStr) {
+    const [hours, mins] = timeStr.split(':').map(Number);
+    return hours * 60 + mins;
+}
+
+function getMergedActivities(dayNum) {
+    const hardcoded = TRIP_DATA.activities[dayNum] || [];
+    const mods = loadActivityModifications();
+    const custom = loadCustomActivities();
+
+    const dayMods = mods[dayNum] || { edits: {}, deletions: [] };
+    const dayCustom = custom[dayNum] || [];
+
+    // Step 1: Apply deletions and edits to hardcoded
+    let merged = hardcoded
+        .map((act, idx) => {
+            // Check if deleted
+            if (dayMods.deletions.includes(idx)) return null;
+            // Check if edited
+            if (dayMods.edits[idx]) {
+                return { ...act, ...dayMods.edits[idx], index: idx, isEdited: true };
+            }
+            return { ...act, index: idx, isHardcoded: true };
+        })
+        .filter(act => act !== null);
+
+    // Step 2: Append custom activities
+    const customWithMeta = dayCustom.map(act => ({ ...act, isCustom: true }));
+    merged = [...merged, ...customWithMeta];
+
+    // Step 3: Sort by time
+    merged.sort((a, b) => {
+        const timeA = parseTime(a.time);
+        const timeB = parseTime(b.time);
+        return timeA - timeB;
+    });
+
+    return merged;
+}
+
+function formatTimeInput(timeStr) {
+    // Handle both "HH:MM" and browser time input format
+    const match = timeStr.match(/^(\d{1,2}):(\d{2})$/);
+    if (!match) return null;
+
+    const hours = parseInt(match[1], 10);
+    const mins = parseInt(match[2], 10);
+
+    if (hours < 0 || hours > 23 || mins < 0 || mins > 59) return null;
+
+    return `${hours.toString().padStart(2, '0')}:${mins.toString().padStart(2, '0')}`;
+}
+
+function addCustomActivity(dayNum, time, title, desc, romantic = false) {
+    const t = String(title || '').trim();
+    const ti = String(time || '').trim();
+    if (!t || !ti) return false;
+
+    const formattedTime = formatTimeInput(ti);
+    if (!formattedTime) return false;
+
+    const custom = loadCustomActivities();
+    if (!custom[dayNum]) custom[dayNum] = [];
+
+    custom[dayNum].push({
+        id: createActivityId(),
+        time: formattedTime,
+        title: t,
+        desc: String(desc || '').trim(),
+        romantic: !!romantic,
+        createdAt: Date.now()
+    });
+
+    return saveCustomActivities(custom);
+}
+
+function updateHardcodedActivity(dayNum, index, time, title, desc, romantic) {
+    const formattedTime = formatTimeInput(String(time || '').trim());
+    if (!formattedTime) return false;
+
+    const mods = loadActivityModifications();
+    if (!mods[dayNum]) mods[dayNum] = { edits: {}, deletions: [] };
+
+    mods[dayNum].edits[index] = {
+        time: formattedTime,
+        title: String(title || '').trim(),
+        desc: String(desc || '').trim(),
+        romantic: !!romantic
+    };
+
+    return saveActivityModifications(mods);
+}
+
+function updateCustomActivity(dayNum, activityId, time, title, desc, romantic) {
+    const formattedTime = formatTimeInput(String(time || '').trim());
+    if (!formattedTime) return false;
+
+    const custom = loadCustomActivities();
+    if (!custom[dayNum]) return false;
+
+    const idx = custom[dayNum].findIndex(a => a.id === activityId);
+    if (idx === -1) return false;
+
+    custom[dayNum][idx] = {
+        ...custom[dayNum][idx],
+        time: formattedTime,
+        title: String(title || '').trim(),
+        desc: String(desc || '').trim(),
+        romantic: !!romantic
+    };
+
+    return saveCustomActivities(custom);
+}
+
+function deleteHardcodedActivity(dayNum, index) {
+    const mods = loadActivityModifications();
+    if (!mods[dayNum]) mods[dayNum] = { edits: {}, deletions: [] };
+
+    // Add to deletions if not already there
+    if (!mods[dayNum].deletions.includes(index)) {
+        mods[dayNum].deletions.push(index);
+    }
+
+    // Remove from edits if it was edited
+    if (mods[dayNum].edits[index]) {
+        delete mods[dayNum].edits[index];
+    }
+
+    return saveActivityModifications(mods);
+}
+
+function deleteCustomActivity(dayNum, activityId) {
+    const custom = loadCustomActivities();
+    if (!custom[dayNum]) return true;
+
+    custom[dayNum] = custom[dayNum].filter(a => a.id !== activityId);
+
+    // Clean up empty day arrays
+    if (custom[dayNum].length === 0) {
+        delete custom[dayNum];
+    }
+
+    return saveCustomActivities(custom);
+}
 
 const CHECKLIST_SECTIONS = [
     {
@@ -418,6 +657,20 @@ const CHECKLIST_SECTIONS = [
 
 function getAllChecklistItems() {
     const items = [];
+
+    // User-added tasks
+    const custom = loadCustomChecklistTasks();
+    if (custom.length) {
+        items.push(...custom.map(i => ({
+            id: i.id,
+            title: i.title,
+            sub: i.sub,
+            sectionId: 'custom',
+            sectionTitle: '✨ My added tasks',
+            isCustom: true
+        })));
+    }
+
     for (const section of CHECKLIST_SECTIONS) {
         if (section.items) items.push(...section.items.map(i => ({ ...i, sectionId: section.id, sectionTitle: section.title })));
         if (section.groups) {
@@ -530,6 +783,103 @@ function renderChecklistSection(section, state) {
     return '';
 }
 
+function renderCustomTasksSection(tasks, state) {
+    const total = tasks.length;
+    const done = tasks.reduce((a, i) => a + (state[i.id] ? 1 : 0), 0);
+
+    if (!tasks.length) {
+        return `
+            <div class="checklist-category" data-section="custom">
+                <div class="checklist-category-header">
+                    <h3>✨ My added tasks</h3>
+                    <div class="count">0/0</div>
+                </div>
+                <div class="empty-hint">No custom tasks yet — tap <strong>+ Add</strong> above to create one.</div>
+            </div>
+        `;
+    }
+
+    return `
+        <div class="checklist-category" data-section="custom">
+            <div class="checklist-category-header">
+                <h3>✨ My added tasks</h3>
+                <div class="count">${done}/${total}</div>
+            </div>
+            ${tasks.map((item) => `
+                <div class="check-item-row ${state[item.id] ? 'completed' : ''}">
+                    <label class="check-item ${state[item.id] ? 'completed' : ''}">
+                        <input type="checkbox" data-check-id="${item.id}" ${state[item.id] ? 'checked' : ''} />
+                        <div class="check-text">
+                            <div class="check-title">${item.title}</div>
+                            ${item.sub ? `<div class="check-sub">${item.sub}</div>` : ''}
+                        </div>
+                    </label>
+                    <button class="icon-btn" data-delete-id="${item.id}" aria-label="Delete task" title="Delete">🗑️</button>
+                </div>
+            `).join('')}
+        </div>
+    `;
+}
+
+function renderChecklistAddCard() {
+    const wrap = document.getElementById('checklistAddWrap');
+    if (!wrap) return;
+
+    if (!checklistAddOpen) {
+        wrap.innerHTML = '';
+        return;
+    }
+
+    wrap.innerHTML = `
+        <div class="checklist-add" id="checklistAddCard">
+            <div><strong>Add a task</strong></div>
+            <div class="row">
+                <input id="newTaskTitle" type="text" placeholder="Task title (e.g., Buy travel adaptors)" maxlength="120" />
+            </div>
+            <div class="row">
+                <input id="newTaskNote" type="text" placeholder="Optional note (e.g., 2x, get from Boots)" maxlength="160" />
+            </div>
+            <div class="row">
+                <button class="small-btn primary-btn" id="saveTaskBtn">Add task</button>
+                <button class="small-btn" id="cancelTaskBtn">Cancel</button>
+            </div>
+            <div class="helper">Saved offline on this device.</div>
+        </div>
+    `;
+
+    const titleEl = document.getElementById('newTaskTitle');
+    const noteEl = document.getElementById('newTaskNote');
+    titleEl?.focus();
+
+    document.getElementById('cancelTaskBtn')?.addEventListener('click', () => {
+        checklistAddOpen = false;
+        renderChecklistView();
+    }, { once: true });
+
+    const doSave = () => {
+        const ok = addCustomChecklistTask(titleEl?.value || '', noteEl?.value || '');
+        if (!ok) {
+            alert('Please enter a task title.');
+            titleEl?.focus();
+            return;
+        }
+        checklistAddOpen = false;
+        renderChecklistView();
+    };
+
+    document.getElementById('saveTaskBtn')?.addEventListener('click', doSave, { once: true });
+
+    // Allow Enter to submit from either input
+    [titleEl, noteEl].forEach(el => {
+        el?.addEventListener('keydown', (e) => {
+            if (e.key === 'Enter') {
+                e.preventDefault();
+                doSave();
+            }
+        });
+    });
+}
+
 function renderChecklistView() {
     const container = document.getElementById('checklistContent');
     if (!container) return;
@@ -537,7 +887,15 @@ function renderChecklistView() {
     const state = loadChecklistState();
     renderChecklistSummary();
 
-    container.innerHTML = CHECKLIST_SECTIONS.map(section => renderChecklistSection(section, state)).join('');
+    // Add card (shows/hides based on checklistAddOpen)
+    renderChecklistAddCard();
+
+    const customTasks = loadCustomChecklistTasks();
+
+    container.innerHTML = [
+        renderCustomTasksSection(customTasks, state),
+        ...CHECKLIST_SECTIONS.map(section => renderChecklistSection(section, state))
+    ].join('');
 
     // Wire up checkbox listeners
     container.querySelectorAll('input[type="checkbox"][data-check-id]').forEach(cb => {
@@ -547,6 +905,23 @@ function renderChecklistView() {
             renderChecklistView(); // small list - quick re-render keeps UI consistent
         });
     });
+
+    // Delete custom task
+    container.querySelectorAll('button[data-delete-id]').forEach(btn => {
+        btn.addEventListener('click', (e) => {
+            e.preventDefault();
+            const id = btn.getAttribute('data-delete-id');
+            if (!id) return;
+            deleteCustomChecklistTask(id);
+            renderChecklistView();
+        });
+    });
+
+    // Add task button
+    document.getElementById('addTaskBtn')?.addEventListener('click', () => {
+        checklistAddOpen = !checklistAddOpen;
+        renderChecklistView();
+    }, { once: true });
 
     // Reset button
     document.getElementById('resetChecklistBtn')?.addEventListener('click', () => {
@@ -559,6 +934,12 @@ function renderChecklistView() {
 let currentView = 'homeView';
 let selectedDay = null;
 let deferredPrompt = null;
+
+// Activity form state
+let activityFormOpen = false;
+let activityFormMode = null; // 'add' | 'edit'
+let activityFormDay = null;
+let activityFormData = null; // {index?, id?, time, title, desc, romantic, isCustom?}
 
 // ============ UTILITY FUNCTIONS ============
 function formatDate(date) {
@@ -679,12 +1060,247 @@ function renderCities(currentDayNum) {
     });
 }
 
+function refreshCurrentView() {
+    if (currentView === 'homeView') {
+        renderHomeView();
+    } else if (currentView === 'scheduleView') {
+        renderScheduleView(selectedDay || getDayOfTrip().day || 1);
+    }
+}
+
+function openActivityForm(mode, dayNum, activityData = null) {
+    activityFormOpen = true;
+    activityFormMode = mode;
+    activityFormDay = dayNum;
+    activityFormData = activityData;
+    renderActivityForm();
+}
+
+function closeActivityForm() {
+    activityFormOpen = false;
+    activityFormMode = null;
+    activityFormDay = null;
+    activityFormData = null;
+    renderActivityForm();
+}
+
+function renderActivityForm() {
+    const wrapId = currentView === 'scheduleView' ? 'activityFormWrapSchedule' : 'activityFormWrap';
+    const wrap = document.getElementById(wrapId);
+    if (!wrap) return;
+
+    if (!activityFormOpen) {
+        wrap.innerHTML = '';
+        return;
+    }
+
+    const data = activityFormData || { time: '', title: '', desc: '', romantic: false };
+    const isEdit = activityFormMode === 'edit';
+
+    wrap.innerHTML = `
+        <div class="checklist-add" id="activityFormCard">
+            <div><strong>${isEdit ? 'Edit Activity' : 'Add Activity'} - Day ${activityFormDay}</strong></div>
+            <div class="row">
+                <input id="activityTime" type="text" value="${data.time}"
+                       placeholder="Time (e.g., 14:30)" maxlength="5" style="max-width:120px;" />
+            </div>
+            <div class="row">
+                <input id="activityTitle" type="text" value="${data.title}"
+                       placeholder="Activity title" maxlength="100" />
+            </div>
+            <div class="row">
+                <input id="activityDesc" type="text" value="${data.desc}"
+                       placeholder="Description" maxlength="200" />
+            </div>
+            <div class="row">
+                <label style="display:flex;align-items:center;gap:8px;font-size:.9rem;">
+                    <input id="activityRomantic" type="checkbox" ${data.romantic ? 'checked' : ''} />
+                    <span>💕 Romantic activity</span>
+                </label>
+            </div>
+            <div class="row">
+                <button class="small-btn primary-btn" id="saveActivityBtn">
+                    ${isEdit ? 'Save Changes' : 'Add Activity'}
+                </button>
+                <button class="small-btn" id="cancelActivityBtn">Cancel</button>
+            </div>
+            <div class="helper">Changes saved offline on this device.</div>
+        </div>
+    `;
+
+    const timeEl = document.getElementById('activityTime');
+    const titleEl = document.getElementById('activityTitle');
+    const descEl = document.getElementById('activityDesc');
+    const romanticEl = document.getElementById('activityRomantic');
+
+    titleEl?.focus();
+
+    // Cancel button
+    document.getElementById('cancelActivityBtn')?.addEventListener('click', () => {
+        closeActivityForm();
+    }, { once: true });
+
+    // Save button
+    const doSave = () => {
+        const time = timeEl?.value?.trim() || '';
+        const title = titleEl?.value?.trim() || '';
+        const desc = descEl?.value?.trim() || '';
+        const romantic = romanticEl?.checked || false;
+
+        // Validation
+        if (!time) {
+            alert('Please enter a time (HH:MM format).');
+            timeEl?.focus();
+            return;
+        }
+        if (!title) {
+            alert('Please enter an activity title.');
+            titleEl?.focus();
+            return;
+        }
+
+        // Format time to HH:MM
+        const formattedTime = formatTimeInput(time);
+        if (!formattedTime) {
+            alert('Please enter a valid time (e.g., 14:30).');
+            timeEl?.focus();
+            return;
+        }
+
+        let success = false;
+        if (activityFormMode === 'add') {
+            success = addCustomActivity(activityFormDay, formattedTime, title, desc, romantic);
+        } else if (activityFormMode === 'edit') {
+            if (activityFormData.isCustom) {
+                success = updateCustomActivity(
+                    activityFormDay,
+                    activityFormData.id,
+                    formattedTime,
+                    title,
+                    desc,
+                    romantic
+                );
+            } else {
+                success = updateHardcodedActivity(
+                    activityFormDay,
+                    activityFormData.index,
+                    formattedTime,
+                    title,
+                    desc,
+                    romantic
+                );
+            }
+        }
+
+        if (!success) {
+            alert('Failed to save activity. Please try again.');
+            return;
+        }
+
+        closeActivityForm();
+        refreshCurrentView();
+    };
+
+    document.getElementById('saveActivityBtn')?.addEventListener('click', doSave, { once: true });
+
+    // Enter key support
+    [timeEl, titleEl, descEl].forEach(el => {
+        el?.addEventListener('keydown', (e) => {
+            if (e.key === 'Enter') {
+                e.preventDefault();
+                doSave();
+            }
+        });
+    });
+}
+
+function wireActivityButtons(dayNum, activities) {
+    const container = document.getElementById(currentView === 'scheduleView' ? 'scheduleContent' : 'activitiesList');
+    if (!container) return;
+
+    // Edit buttons
+    container.querySelectorAll('[data-edit-activity]').forEach(btn => {
+        btn.addEventListener('click', (e) => {
+            e.preventDefault();
+            const displayIdx = parseInt(btn.getAttribute('data-edit-activity'), 10);
+            const activity = activities[displayIdx];
+
+            openActivityForm('edit', dayNum, {
+                index: activity.index,
+                id: activity.id,
+                time: activity.time,
+                title: activity.title,
+                desc: activity.desc,
+                romantic: activity.romantic,
+                isCustom: activity.isCustom,
+                isHardcoded: activity.isHardcoded
+            });
+        });
+    });
+
+    // Delete buttons
+    container.querySelectorAll('[data-delete-activity]').forEach(btn => {
+        btn.addEventListener('click', (e) => {
+            e.preventDefault();
+            const displayIdx = parseInt(btn.getAttribute('data-delete-activity'), 10);
+            const activity = activities[displayIdx];
+
+            const confirmed = confirm(`Delete "${activity.title}"?`);
+            if (!confirmed) return;
+
+            if (activity.isCustom) {
+                deleteCustomActivity(dayNum, activity.id);
+            } else {
+                deleteHardcodedActivity(dayNum, activity.index);
+            }
+
+            refreshCurrentView();
+        });
+    });
+}
+
 function renderActivities(dayNum) {
     const container = document.getElementById('activitiesList');
-    const activities = TRIP_DATA.activities[dayNum] || [];
-    document.getElementById('activitiesTitle').textContent = dayNum === getDayOfTrip().day ? "Today's Activities" : `Day ${dayNum} Activities`;
-    if (activities.length === 0) { container.innerHTML = '<p style="color:var(--text-light);padding:15px;">No activities scheduled</p>'; return; }
-    container.innerHTML = activities.map(act => `<div class="activity-card ${act.romantic ? 'activity-romantic' : ''}"><div class="activity-time">${act.time}</div><div class="activity-content"><h4>${act.title}${act.romantic ? '<span class="romantic-badge">💕 Romantic</span>' : ''}</h4><p>${act.desc}</p></div></div>`).join('');
+    const activities = getMergedActivities(dayNum);
+    const isToday = dayNum === getDayOfTrip().day;
+
+    document.getElementById('activitiesTitle').textContent = isToday ? "Today's Activities" : `Day ${dayNum} Activities`;
+
+    if (activities.length === 0) {
+        container.innerHTML = `
+            <p style="color:var(--text-light);padding:15px;">No activities scheduled</p>
+            <button class="small-btn primary-btn" onclick="openActivityForm('add', ${dayNum})" style="width:100%;">
+                + Add Activity
+            </button>
+        `;
+        return;
+    }
+
+    container.innerHTML = activities.map((act, displayIdx) => {
+        const romanticBadge = act.romantic ? '<span class="romantic-badge">💕 Romantic</span>' : '';
+        const editBtn = `<button class="icon-btn" data-edit-activity="${displayIdx}" title="Edit">✏️</button>`;
+        const deleteBtn = `<button class="icon-btn" data-delete-activity="${displayIdx}" title="Delete">🗑️</button>`;
+
+        return `
+            <div class="activity-card ${act.romantic ? 'activity-romantic' : ''}" data-activity-idx="${displayIdx}">
+                <div class="activity-time">${act.time}</div>
+                <div class="activity-content" style="flex:1;">
+                    <h4>${act.title}${romanticBadge}</h4>
+                    <p>${act.desc}</p>
+                </div>
+                <div style="display:flex;gap:5px;align-items:center;">
+                    ${editBtn}
+                    ${deleteBtn}
+                </div>
+            </div>
+        `;
+    }).join('') + `
+        <button class="small-btn primary-btn" onclick="openActivityForm('add', ${dayNum})" style="margin-top:10px;width:100%;">
+            + Add Activity
+        </button>
+    `;
+
+    wireActivityButtons(dayNum, activities);
 }
 
 function renderTip(dayNum) {
@@ -736,15 +1352,27 @@ function renderScheduleView(dayNum) {
     const city = getCurrentCity(dayNum);
     renderDaySelector(dayNum);
     const content = document.getElementById('scheduleContent');
-    const activities = TRIP_DATA.activities[dayNum] || [];
+    const activities = getMergedActivities(dayNum);
     const tip = TRIP_DATA.tips[dayNum];
     const date = new Date(TRIP_DATA.startDate);
     date.setDate(date.getDate() + dayNum - 1);
+
+    const activitiesHtml = activities.length > 0
+        ? `<div class="section"><div class="section-header"><h3>Activities</h3></div>${activities.map((act, displayIdx) => {
+            const romanticBadge = act.romantic ? '<span class="romantic-badge">💕 Romantic</span>' : '';
+            const editBtn = `<button class="icon-btn" data-edit-activity="${displayIdx}" title="Edit">✏️</button>`;
+            const deleteBtn = `<button class="icon-btn" data-delete-activity="${displayIdx}" title="Delete">🗑️</button>`;
+            return `<div class="activity-card ${act.romantic ? 'activity-romantic' : ''}"><div class="activity-time">${act.time}</div><div class="activity-content" style="flex:1;"><h4>${act.title}${romanticBadge}</h4><p>${act.desc}</p></div><div style="display:flex;gap:5px;align-items:center;">${editBtn}${deleteBtn}</div></div>`;
+        }).join('')}<button class="small-btn primary-btn" onclick="openActivityForm('add', ${dayNum})" style="margin:10px 15px;width:calc(100% - 30px);">+ Add Activity</button></div>`
+        : `<div class="section"><p style="color:var(--text-light);padding:15px;">No activities scheduled</p><button class="small-btn primary-btn" onclick="openActivityForm('add', ${dayNum})" style="margin:0 15px 15px 15px;width:calc(100% - 30px);">+ Add Activity</button></div>`;
+
     content.innerHTML = `
         <div class="section" style="margin-top:0;"><div class="current-location" style="background:var(--primary);margin:15px;border-radius:12px;padding:15px;"><span class="location-icon">${city.emoji}</span><div class="location-info"><h2 style="color:#fff;">${city.name}</h2><p style="color:rgba(255,255,255,.9);">${formatDate(date)} • Day ${dayNum}</p></div></div></div>
-        ${activities.length > 0 ? `<div class="section"><div class="section-header"><h3>Activities</h3></div>${activities.map(act => `<div class="activity-card ${act.romantic ? 'activity-romantic' : ''}"><div class="activity-time">${act.time}</div><div class="activity-content"><h4>${act.title}${act.romantic ? '<span class="romantic-badge">💕 Romantic</span>' : ''}</h4><p>${act.desc}</p></div></div>`).join('')}</div>` : ''}
+        ${activitiesHtml}
         ${tip ? `<div class="tip-card"><span class="tip-icon">💡</span><div class="tip-content">${tip}</div></div>` : ''}
         <div class="hotel-card"><div class="hotel-header"><span class="hotel-icon">🏨</span><div><div class="hotel-name">${city.hotel.name}</div><div class="hotel-address">${city.hotel.address}</div></div></div>${city.hotel.chinese ? `<div class="hotel-chinese">${city.hotel.chinese}</div>` : ''}</div>`;
+
+    wireActivityButtons(dayNum, activities);
 }
 
 function renderAllDaysView() {
