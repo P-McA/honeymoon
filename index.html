@@ -115,6 +115,9 @@
         .checklist-summary h4{font-size:.95rem;font-weight:600}
         .small-btn{background:var(--bg);border:1px solid var(--border);padding:8px 10px;border-radius:10px;font-size:.8rem;color:var(--text);cursor:pointer}
         .small-btn:active{transform:translateY(1px)}
+        .btn-row{display:flex;gap:8px;align-items:center}
+        .primary-btn{background:var(--primary);color:#fff;border:none}
+        .primary-btn:hover{filter:brightness(.98)}
         .checklist-progress{background:var(--bg);border-radius:10px;height:10px;overflow:hidden}
         .checklist-progress-bar{background:var(--success);height:100%;border-radius:10px;transition:width .3s ease}
         .checklist-meta{margin-top:10px;font-size:.8rem;color:var(--text-light);display:flex;justify-content:space-between;gap:10px;flex-wrap:wrap}
@@ -131,6 +134,18 @@
         .check-item.completed .check-title{text-decoration:line-through;opacity:.65}
         .check-item.completed .check-sub{opacity:.6}
         .pill{display:inline-block;background:#f0f5ff;color:var(--primary);font-size:.72rem;padding:2px 8px;border-radius:999px;margin-right:6px}
+
+        .checklist-add{background:var(--card);border-radius:16px;padding:14px;box-shadow:0 2px 8px rgba(0,0,0,.06);margin-bottom:12px}
+        .checklist-add .row{display:flex;gap:10px;flex-wrap:wrap;margin-top:10px}
+        .checklist-add input{flex:1;min-width:220px;padding:10px 12px;border:1px solid var(--border);border-radius:12px;font-size:.9rem}
+        .checklist-add .helper{font-size:.78rem;color:var(--text-light);margin-top:6px}
+
+        .check-item-row{display:flex;gap:10px;align-items:flex-start;padding:10px 0;border-top:1px solid var(--border)}
+        .check-item-row:first-of-type{border-top:none;padding-top:0}
+        .check-item-row .check-item{border-top:none;padding:0;flex:1}
+        .icon-btn{background:var(--bg);border:1px solid var(--border);border-radius:10px;padding:7px 9px;cursor:pointer;line-height:1;font-size:.95rem}
+        .icon-btn:active{transform:translateY(1px)}
+        .empty-hint{font-size:.85rem;color:var(--text-light);padding:10px 0}
 
     </style>
 </head>
@@ -191,6 +206,7 @@
 
         <div class="section">
             <div class="section-header"><h3 id="activitiesTitle">Today's Activities</h3></div>
+            <div id="activityFormWrap"></div>
             <div id="activitiesList"></div>
         </div>
 
@@ -204,6 +220,7 @@
 
     <main class="view" id="scheduleView">
         <div class="day-selector" id="daySelector"></div>
+        <div id="activityFormWrapSchedule"></div>
         <div id="scheduleContent"></div>
     </main>
 
@@ -216,10 +233,14 @@
         <div class="section">
             <div class="section-header">
                 <h3>Checklist</h3>
-                <button class="small-btn" id="resetChecklistBtn">Reset</button>
+                <div class="btn-row">
+                    <button class="small-btn primary-btn" id="addTaskBtn">+ Add</button>
+                    <button class="small-btn" id="resetChecklistBtn">Reset</button>
+                </div>
             </div>
             <div class="checklist-summary" id="checklistSummary"></div>
         </div>
+        <div class="section" id="checklistAddWrap"></div>
         <div class="section" id="checklistContent"></div>
     </main>
 
