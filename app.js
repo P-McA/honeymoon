@@ -1596,6 +1596,24 @@ function renderAllDaysView() {
     });
 }
 
+function playChineseAudio(text) {
+    if (!window.speechSynthesis) {
+        alert('Audio playback is not supported in this browser.');
+        return;
+    }
+
+    // Cancel any ongoing speech
+    window.speechSynthesis.cancel();
+
+    const utterance = new SpeechSynthesisUtterance(text);
+    utterance.lang = 'zh-CN'; // Chinese (Mandarin, Simplified)
+    utterance.rate = 0.8; // Slightly slower for clarity
+    utterance.pitch = 1.0;
+    utterance.volume = 1.0;
+
+    window.speechSynthesis.speak(utterance);
+}
+
 function renderTranslationsView() {
     const container = document.getElementById('translationsContent');
     if (!container) return;
@@ -1607,11 +1625,14 @@ function renderTranslationsView() {
     ];
 
     const html = sections.map(section => {
-        const phrasesHtml = section.data.phrases.map(phrase => `
-            <div style="padding:12px 0;border-top:1px solid var(--border);">
-                <div style="font-size:.9rem;font-weight:500;margin-bottom:4px;">${phrase.english}</div>
-                <div style="font-size:1.1rem;color:var(--primary);margin-bottom:2px;">${phrase.chinese}</div>
-                <div style="font-size:.8rem;color:var(--text-light);font-style:italic;">${phrase.pinyin}</div>
+        const phrasesHtml = section.data.phrases.map((phrase, idx) => `
+            <div style="padding:12px 0;border-top:1px solid var(--border);display:flex;gap:12px;align-items:flex-start;">
+                <div style="flex:1;">
+                    <div style="font-size:.9rem;font-weight:500;margin-bottom:4px;">${phrase.english}</div>
+                    <div style="font-size:1.1rem;color:var(--primary);margin-bottom:2px;">${phrase.chinese}</div>
+                    <div style="font-size:.8rem;color:var(--text-light);font-style:italic;">${phrase.pinyin}</div>
+                </div>
+                <button class="icon-btn" data-speak="${section.key}-${idx}" data-text="${phrase.chinese}" title="Play audio" style="flex-shrink:0;font-size:1.2rem;">🔊</button>
             </div>
         `).join('');
 
@@ -1627,6 +1648,17 @@ function renderTranslationsView() {
     }).join('');
 
     container.innerHTML = html;
+
+    // Wire up audio buttons
+    container.querySelectorAll('button[data-speak]').forEach(btn => {
+        btn.addEventListener('click', (e) => {
+            e.preventDefault();
+            const text = btn.getAttribute('data-text');
+            if (text) {
+                playChineseAudio(text);
+            }
+        });
+    });
 }
 
 // ============ NAVIGATION ============
