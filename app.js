@@ -265,6 +265,90 @@ const TRIP_DATA = {
 };
 
 
+// ============ TRANSLATIONS DATA ============
+const TRANSLATIONS_DATA = {
+    general: {
+        title: "👋 General Phrases",
+        emoji: "👋",
+        phrases: [
+            { english: "Hello", chinese: "你好", pinyin: "Nǐ hǎo" },
+            { english: "Good morning", chinese: "早上好", pinyin: "Zǎoshang hǎo" },
+            { english: "Good evening", chinese: "晚上好", pinyin: "Wǎnshang hǎo" },
+            { english: "Thank you", chinese: "谢谢", pinyin: "Xièxiè" },
+            { english: "Thank you very much", chinese: "非常感谢", pinyin: "Fēicháng gǎnxiè" },
+            { english: "You're welcome", chinese: "不客气", pinyin: "Bù kèqì" },
+            { english: "Excuse me / Sorry", chinese: "对不起", pinyin: "Duìbùqǐ" },
+            { english: "I'm sorry", chinese: "抱歉", pinyin: "Bàoqiàn" },
+            { english: "It's okay / No problem", chinese: "没关系", pinyin: "Méi guānxi" },
+            { english: "Yes", chinese: "是", pinyin: "Shì" },
+            { english: "No", chinese: "不是", pinyin: "Bù shì" },
+            { english: "Okay / Good", chinese: "好", pinyin: "Hǎo" },
+            { english: "Please", chinese: "请", pinyin: "Qǐng" },
+            { english: "Goodbye", chinese: "再见", pinyin: "Zàijiàn" },
+            { english: "See you later", chinese: "待会见", pinyin: "Dāihuì jiàn" },
+            { english: "I don't understand", chinese: "我不明白", pinyin: "Wǒ bù míngbái" },
+            { english: "Do you speak English?", chinese: "你会说英语吗？", pinyin: "Nǐ huì shuō Yīngyǔ ma?" },
+            { english: "I don't speak Chinese", chinese: "我不会说中文", pinyin: "Wǒ bù huì shuō Zhōngwén" },
+            { english: "Can you help me?", chinese: "你能帮我吗？", pinyin: "Nǐ néng bāng wǒ ma?" },
+            { english: "What is this?", chinese: "这是什么？", pinyin: "Zhè shì shénme?" }
+        ]
+    },
+    travel: {
+        title: "✈️ Travel & Directions",
+        emoji: "✈️",
+        phrases: [
+            { english: "Where is...?", chinese: "...在哪里？", pinyin: "...zài nǎlǐ?" },
+            { english: "Where is the bathroom?", chinese: "厕所在哪里？", pinyin: "Cèsuǒ zài nǎlǐ?" },
+            { english: "Where is the hotel?", chinese: "酒店在哪里？", pinyin: "Jiǔdiàn zài nǎlǐ?" },
+            { english: "Where is the train station?", chinese: "火车站在哪里？", pinyin: "Huǒchē zhàn zài nǎlǐ?" },
+            { english: "Where is the airport?", chinese: "机场在哪里？", pinyin: "Jīchǎng zài nǎlǐ?" },
+            { english: "Are we close?", chinese: "我们快到了吗？", pinyin: "Wǒmen kuài dào le ma?" },
+            { english: "How far is it?", chinese: "有多远？", pinyin: "Yǒu duō yuǎn?" },
+            { english: "How long does it take?", chinese: "要多长时间？", pinyin: "Yào duō cháng shíjiān?" },
+            { english: "Please take me to...", chinese: "请带我去...", pinyin: "Qǐng dài wǒ qù..." },
+            { english: "I want to go to...", chinese: "我想去...", pinyin: "Wǒ xiǎng qù..." },
+            { english: "Stop here please", chinese: "请在这里停", pinyin: "Qǐng zài zhèlǐ tíng" },
+            { english: "Left", chinese: "左", pinyin: "Zuǒ" },
+            { english: "Right", chinese: "右", pinyin: "Yòu" },
+            { english: "Straight ahead", chinese: "直走", pinyin: "Zhí zǒu" },
+            { english: "Turn left", chinese: "左转", pinyin: "Zuǒ zhuǎn" },
+            { english: "Turn right", chinese: "右转", pinyin: "Yòu zhuǎn" },
+            { english: "How much is the taxi?", chinese: "出租车多少钱？", pinyin: "Chūzū chē duōshao qián?" },
+            { english: "Can I see the map?", chinese: "我能看看地图吗？", pinyin: "Wǒ néng kànkan dìtú ma?" },
+            { english: "I'm lost", chinese: "我迷路了", pinyin: "Wǒ mílù le" },
+            { english: "What time does it open/close?", chinese: "什么时候开门/关门？", pinyin: "Shénme shíhou kāimén/guānmén?" }
+        ]
+    },
+    service: {
+        title: "🍜 Service Interactions",
+        emoji: "🍜",
+        phrases: [
+            { english: "I would like...", chinese: "我想要...", pinyin: "Wǒ xiǎng yào..." },
+            { english: "Can I have the menu?", chinese: "能给我菜单吗？", pinyin: "Néng gěi wǒ càidān ma?" },
+            { english: "I want to order", chinese: "我要点餐", pinyin: "Wǒ yào diǎn cán" },
+            { english: "This one please", chinese: "我要这个", pinyin: "Wǒ yào zhège" },
+            { english: "I don't eat meat", chinese: "我不吃肉", pinyin: "Wǒ bù chī ròu" },
+            { english: "I'm vegetarian", chinese: "我是素食者", pinyin: "Wǒ shì sùshí zhě" },
+            { english: "Not spicy", chinese: "不要辣", pinyin: "Bù yào là" },
+            { english: "A little spicy", chinese: "微辣", pinyin: "Wēi là" },
+            { english: "Very spicy", chinese: "很辣", pinyin: "Hěn là" },
+            { english: "Water please", chinese: "请给我水", pinyin: "Qǐng gěi wǒ shuǐ" },
+            { english: "The bill please", chinese: "买单", pinyin: "Mǎidān" },
+            { english: "How much is this?", chinese: "这个多少钱？", pinyin: "Zhège duōshao qián?" },
+            { english: "Too expensive", chinese: "太贵了", pinyin: "Tài guì le" },
+            { english: "Can you make it cheaper?", chinese: "能便宜一点吗？", pinyin: "Néng piányí yīdiǎn ma?" },
+            { english: "I'll take it", chinese: "我买了", pinyin: "Wǒ mǎi le" },
+            { english: "Can I try this?", chinese: "我能试试吗？", pinyin: "Wǒ néng shì shì ma?" },
+            { english: "Do you accept credit cards?", chinese: "可以用信用卡吗？", pinyin: "Kěyǐ yòng xìnyòngkǎ ma?" },
+            { english: "Can I use Alipay?", chinese: "可以用支付宝吗？", pinyin: "Kěyǐ yòng Zhīfùbǎo ma?" },
+            { english: "Two tickets please", chinese: "两张票", pinyin: "Liǎng zhāng piào" },
+            { english: "One more please", chinese: "再来一个", pinyin: "Zài lái yīgè" },
+            { english: "That's all", chinese: "就这些", pinyin: "Jiù zhèxiē" },
+            { english: "Delicious!", chinese: "好吃！", pinyin: "Hǎochī!" }
+        ]
+    }
+};
+
 // ============ CHECKLIST DATA ============
 const CHECKLIST_STORAGE_KEY = 'china-honeymoon-checklist-v1';
 const CHECKLIST_CUSTOM_TASKS_KEY = 'china-honeymoon-checklist-custom-v1';
@@ -1512,6 +1596,39 @@ function renderAllDaysView() {
     });
 }
 
+function renderTranslationsView() {
+    const container = document.getElementById('translationsContent');
+    if (!container) return;
+
+    const sections = [
+        { key: 'general', data: TRANSLATIONS_DATA.general },
+        { key: 'travel', data: TRANSLATIONS_DATA.travel },
+        { key: 'service', data: TRANSLATIONS_DATA.service }
+    ];
+
+    const html = sections.map(section => {
+        const phrasesHtml = section.data.phrases.map(phrase => `
+            <div style="padding:12px 0;border-top:1px solid var(--border);">
+                <div style="font-size:.9rem;font-weight:500;margin-bottom:4px;">${phrase.english}</div>
+                <div style="font-size:1.1rem;color:var(--primary);margin-bottom:2px;">${phrase.chinese}</div>
+                <div style="font-size:.8rem;color:var(--text-light);font-style:italic;">${phrase.pinyin}</div>
+            </div>
+        `).join('');
+
+        return `
+            <div class="checklist-category" style="margin-bottom:15px;">
+                <div class="checklist-category-header">
+                    <h3>${section.data.title}</h3>
+                    <div class="count">${section.data.phrases.length}</div>
+                </div>
+                ${phrasesHtml}
+            </div>
+        `;
+    }).join('');
+
+    container.innerHTML = html;
+}
+
 // ============ NAVIGATION ============
 function switchView(viewId) {
     document.querySelectorAll('.view').forEach(v => v.classList.remove('active'));
@@ -1522,6 +1639,7 @@ function switchView(viewId) {
     if (viewId === 'homeView') renderHomeView();
     else if (viewId === 'scheduleView') { const day = selectedDay || getDayOfTrip().day || 1; renderScheduleView(day); }
     else if (viewId === 'checklistView') renderChecklistView();
+    else if (viewId === 'translationsView') renderTranslationsView();
     else if (viewId === 'allDaysView') renderAllDaysView();
 }
 
